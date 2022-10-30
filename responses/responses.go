@@ -11,20 +11,20 @@ type ResponsesImpl struct {
 	Pagination interface{} `json:"pagination,omitempty"`
 }
 
-func (hr *HttpResponse) NewResponses(data any, message string) *ResponsesImpl {
+func (hrsci *HttpResponseStatusCodesImpl) NewResponses(data any, message string) *ResponsesImpl {
 	return &ResponsesImpl{
 		Data:    data,
-		Code:    hr.Code,
-		Status:  hr.Status,
+		Code:    hrsci.Code,
+		Status:  hrsci.Status,
 		Message: message,
 	}
 }
 
-func (hr *HttpResponse) NewResponsesWithPagination(data any, pagination any, message string) *ResponsesImpl {
+func (hrsci *HttpResponseStatusCodesImpl) NewResponsesWithPagination(data any, pagination any, message string) *ResponsesImpl {
 	return &ResponsesImpl{
 		Data:       data,
-		Code:       hr.Code,
-		Status:     hr.Status,
+		Code:       hrsci.Code,
+		Status:     hrsci.Status,
 		Message:    message,
 		Pagination: pagination,
 	}
