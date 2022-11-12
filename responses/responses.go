@@ -28,7 +28,7 @@ func (hrsci *HttpResponseStatusCodesImpl) NewResponses(data any, message string)
 
 // DataProperty returns data.
 func (r *ResponsesImpl) DataProperty() interface{} {
-	return r.Code
+	return r.Data
 }
 
 // StatusProperty returns HTTP status.
