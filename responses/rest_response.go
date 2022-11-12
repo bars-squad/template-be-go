@@ -5,12 +5,16 @@ import (
 	"net/http"
 )
 
-type REST interface {
-	JSON(w http.ResponseWriter, response *ResponsesImpl)
-}
+func REST(w http.ResponseWriter, r Responses) {
+	res := &ResponsesImpl{
+		Data:       r.DataProperty(),
+		Message:    r.MessageProperty(),
+		Status:     r.StatusProperty(),
+		Code:       r.CodeProperty(),
+		Pagination: r.PaginationProperty(),
+	}
 
-func JSON(w http.ResponseWriter, r *ResponsesImpl) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(r.Code)
-	json.NewEncoder(w).Encode(r)
+	w.WriteHeader(res.Code)
+	json.NewEncoder(w).Encode(res)
 }
