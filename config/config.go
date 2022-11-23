@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Config struct {
@@ -19,6 +21,46 @@ type Config struct {
 		Name           string
 		AllowedOrigins []string
 	}
+	BasicAuth struct {
+		Username string
+		Password string
+	}
+	Mongodb struct {
+		ClientOptions *options.ClientOptions
+		Database      string
+	}
+}
+
+func (cfg *Config) mongodb() {
+	appName := os.Getenv("APP_NAME")
+	uri := os.Getenv("MONGODB_URL")
+	db := os.Getenv("MONGODB_DATABASE")
+	minPoolSize, _ := strconv.ParseUint(os.Getenv("MONGODB_MIN_POOL_SIZE"), 10, 64)
+	maxPoolSize, _ := strconv.ParseUint(os.Getenv("MONGODB_MAX_POOL_SIZE"), 10, 64)
+	maxConnIdleTime, _ := strconv.ParseInt(os.Getenv("MONGODB_MAX_IDLE_CONNECTION_TIME_MS"), 10, 64)
+
+	// fmt.Printf("MONGODB_URL\n%s\n\n", uri)
+	// fmt.Printf("MONGODB_DATABASE\n%s\n\n", db)
+
+	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().
+		ApplyURI(uri).
+		SetAppName(appName).
+		SetMinPoolSize(minPoolSize).
+		SetMaxPoolSize(maxPoolSize).
+		SetMaxConnIdleTime(time.Millisecond * time.Duration(maxConnIdleTime)).
+		SetServerAPIOptions(serverAPIOptions)
+
+	cfg.Mongodb.ClientOptions = opts
+	cfg.Mongodb.Database = db
+}
+
+func (cfg *Config) basicAuth() {
+	username := os.Getenv("BASIC_AUTH_USERNAME")
+	password := os.Getenv("BASIC_AUTH_PASSWORD")
+
+	cfg.BasicAuth.Username = username
+	cfg.BasicAuth.Password = password
 }
 
 func (cfg *Config) logFormatter() {
@@ -39,7 +81,6 @@ func (cfg *Config) app() {
 	appName := os.Getenv("APP_NAME")
 	port := os.Getenv("PORT")
 
-	fmt.Println("appName"+appName, "port"+port)
 	rawAllowedOrigins := strings.Trim(os.Getenv("ALLOWED_ORIGINS"), " ")
 
 	allowedOrigins := make([]string, 0)
@@ -56,7 +97,9 @@ func (cfg *Config) app() {
 
 func Load() *Config {
 	cfg := new(Config)
-	cfg.logFormatter()
 	cfg.app()
+	cfg.basicAuth()
+	cfg.logFormatter()
+	cfg.mongodb()
 	return cfg
 }
