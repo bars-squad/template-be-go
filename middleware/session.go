@@ -1,9 +1,11 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
+	"github.com/difaal21/go-template/entity"
 	"github.com/difaal21/go-template/jwt"
 	"github.com/difaal21/go-template/model"
 	"github.com/difaal21/go-template/responses"
@@ -63,6 +65,9 @@ func (a Session) Verify(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
+		ctx = context.WithValue(ctx, &entity.AdminContextKey{}, &userBearerClaims)
+		r = r.WithContext(ctx)
+
 		/* userBuff, err := a.sess.Get(ctx, userBearerClaims.NationalityId)
 		if err != nil {
 			a.respondUnauthorized(w, err.Error())
@@ -83,5 +88,4 @@ func (a Session) Verify(next http.HandlerFunc) http.HandlerFunc {
 
 func (a Session) respondUnauthorized(w http.ResponseWriter, message string) {
 	responses.REST(w, httpResponse.Unathorized("").NewResponses(nil, invalidTokenMessage))
-	return
 }
